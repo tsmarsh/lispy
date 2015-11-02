@@ -1,6 +1,18 @@
+#include "mpc.h"
+
 #define OPERATOR 1
 #define THIRD_CHILD 2
 
-long eval_op(long x, char* op, long y);
+typedef struct {
+  int type;
+  long num;
+  int err;
+} lval;
 
-long eval(mpc_ast_t* t);
+lval eval_op(lval x, char* op, lval y);
+
+lval eval(mpc_ast_t* t);
+
+void lval_print(lval v);
+
+void lval_println(lval v);
