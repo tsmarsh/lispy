@@ -24,13 +24,8 @@ lval lval_err(int x) {
 
 void lval_print(lval v) {
   switch (v.type) {
-    /* In the case the type is a number print it */
-    /* Then 'break' out of the switch. */
     case LVAL_NUM: printf("%li", v.num); break;
-
-    /* In the case the type is an error */
     case LVAL_ERR:
-      /* Check what type of error it is and print it */
       if (v.err == LERR_DIV_ZERO) {
         printf("Error: Division By Zero!");
       }
@@ -43,6 +38,7 @@ void lval_print(lval v) {
     break;
   }
 }
+
 void lval_println(lval v) {
   lval_print(v);
   putchar('\n');
@@ -69,14 +65,13 @@ lval eval_op(lval x, char* op, lval y) {
 lval eval(mpc_ast_t* t) {
   
   if (strstr(t->tag, "number")) {
-    /* Check if there is some error in conversion */
     errno = 0;
     long x = strtol(t->contents, NULL, 10);
     return errno != ERANGE ? lval_num(x) : lval_err(LERR_BAD_NUM);
   }
   
-  char* op = t->children[1]->contents;  
-  lval x = eval(t->children[2]);
+  char* op = t->children[OPERATOR]->contents;  
+  lval x = eval(t->children[THIRD_CHILD]);
   
   int i = 3;
   while (strstr(t->children[i]->tag, "expr")) {
