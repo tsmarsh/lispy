@@ -78,6 +78,7 @@ lval* lval_qexpr(void) {
 void lval_del(lval* v) {
   
   switch (v->type) {
+  case LVAL_FUN:
   case LVAL_NUM: break;
   case LVAL_ERR: free(v->err); break;
   case LVAL_SYM: free(v->sym); break;
@@ -110,6 +111,7 @@ void lval_print(lval* v) {
   case LVAL_SYM:   printf("%s", v->sym); break;
   case LVAL_SEXPR: lval_expr_print(v, '(', ')'); break;
   case LVAL_QEXPR: lval_expr_print(v, '{', '}'); break;
+  case LVAL_FUN:   printf("<function>"); break;
   }
 }
 
@@ -118,10 +120,13 @@ void lval_println(lval* v) {
   putchar('\n');
 }
 
-lval* lval_eval(lval* v) {
-  if (v->type == LVAL_SEXPR){
-    return lval_eval_sexpr(v);
+lval* lval_eval(lenv* e, lval* v) {
+  if (v->type == LVAL_SYM) {
+    lval* x = lenv_get(e, v);
+    lval_del(v);
+    return x;
   }
+  if (v->type == LVAL_SEXPR) { return lval_eval_sexpr(e, v); }
   return v;
 }
 
@@ -141,27 +146,26 @@ lval* lval_pop(lval* v, int i) {
   return x;
 }
 
-lval* lval_eval_sexpr(lval* v) {
+lval* lval_eval_sexpr(lenv* e, lval* v) {
 
   for (int i = 0; i < v->count; i++) {
-    v->cell[i] = lval_eval(v->cell[i]);
+    v->cell[i] = lval_eval(e, v->cell[i]);
   }
-
+  
   for (int i = 0; i < v->count; i++) {
     if (v->cell[i]->type == LVAL_ERR) { return lval_take(v, i); }
   }
 
-  if (v->count == 0) { return v; }
-
+  if (v->count == 0) { return v; }  
   if (v->count == 1) { return lval_take(v, 0); }
 
   lval* f = lval_pop(v, 0);
-  if (f->type != LVAL_SYM) {
-    lval_del(f); lval_del(v);
-    return lval_err("S-expression Does not start with symbol!");
+  if (f->type != LVAL_FUN) {
+    lval_del(v); lval_del(f);
+    return lval_err("first element is not a function");
   }
 
-  lval* result = builtin(v, f->sym);
+  lval* result = f->fun(e, v);
   lval_del(f);
   return result;
 }
@@ -181,3 +185,41 @@ lval* lval_join(lval* x, lval* y) {
   lval_del(y);  
   return x;
 }
+
+lval* lval_fun(lbuiltin func) {
+  lval* v = malloc(sizeof(lval));
+  v->type = LVAL_FUN;
+  v->fun = func;
+  return v;
+}
+
+lval* lval_copy(lval* v) {
+  
+  lval* x = malloc(sizeof(lval));
+  x->type = v->type;
+  
+  switch (v->type) {
+    case LVAL_FUN: x->fun = v->fun; break;
+    case LVAL_NUM: x->num = v->num; break;
+    
+    case LVAL_ERR:
+      x->err = malloc(strlen(v->err) + 1);
+      strcpy(x->err, v->err); break;
+    
+    case LVAL_SYM:
+      x->sym = malloc(strlen(v->sym) + 1);
+      strcpy(x->sym, v->sym); break;
+
+    case LVAL_SEXPR:
+    case LVAL_QEXPR:
+      x->count = v->count;
+      x->cell = malloc(sizeof(lval*) * x->count);
+      for (int i = 0; i < x->count; i++) {
+        x->cell[i] = lval_copy(v->cell[i]);
+      }
+    break;
+  }
+  
+  return x;
+}
+
