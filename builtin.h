@@ -26,4 +26,5 @@ lval* builtin_div(lenv* e, lval* a);
 
 lval* builtin_eval(lenv* e, lval* a);
 
+lval* builtin_def(lenv* e, lval* a);
 #endif
