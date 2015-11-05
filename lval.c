@@ -43,14 +43,6 @@ lval* lval_add(lval* v, lval* x) {
   return v;
 }
 
-lval* lval_err(char* m) {
-  lval* v = malloc(sizeof(lval));
-  v->type = LVAL_ERR;
-  v->err = malloc(strlen(m) + 1);
-  strcpy(v->err, m);
-  return v;
-}
-
 lval* lval_sym(char* s) {
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_SYM;
@@ -223,3 +215,25 @@ lval* lval_copy(lval* v) {
   return x;
 }
 
+lval* lval_err(char* fmt, ...) {
+  lval* v = malloc(sizeof(lval));
+  v->type = LVAL_ERR;
+
+  /* Create a va list and initialize it */
+  va_list va;
+  va_start(va, fmt);
+
+  /* Allocate 512 bytes of space */
+  v->err = malloc(512);
+
+  /* printf the error string with a maximum of 511 characters */
+  vsnprintf(v->err, 511, fmt, va);
+
+  /* Reallocate to number of bytes actually used */
+  v->err = realloc(v->err, strlen(v->err)+1);
+
+  /* Cleanup our va list */
+  va_end(va);
+
+  return v;
+}

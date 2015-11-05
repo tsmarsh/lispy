@@ -2,11 +2,14 @@
 
 lval* builtin_head(lenv* e, lval* a) {
   LASSERT(a, a->count == 1,
-    "Function 'head' passed too many arguments!");
+          "Function 'head' passed too many arguments!",
+          "Got %i, expected %i", a->count, 1);
   LASSERT(a, a->cell[0]->type == LVAL_QEXPR,
-    "Function 'head' passed incorrect type!");
+          "Function 'head' passed incorrect type!",
+          "Got %i, expected %i", a->cell[0]->type, LVAL_QEXPR);
   LASSERT(a, a->cell[0]->count != 0,
-    "Function 'head' passed {}!");
+          "Function 'head' passed {}!",
+          "List is empty");
 
   lval* v = lval_take(a, 0);  
   while (v->count > 1) { lval_del(lval_pop(v, 1)); }
@@ -15,11 +18,13 @@ lval* builtin_head(lenv* e, lval* a) {
 
 lval* builtin_tail(lenv* e, lval* a) {
   LASSERT(a, a->count == 1,
-    "Function 'tail' passed too many arguments!");
+          "Function 'tail' passed too many arguments!");
   LASSERT(a, a->cell[0]->type == LVAL_QEXPR,
-    "Function 'tail' passed incorrect type!");
+          "Function 'tail' passed incorrect type!",
+          "Expected LVAL_QEXPR got %i", a->cell[0]->type);
   LASSERT(a, a->cell[0]->count != 0,
-    "Function 'tail' passed {}!");
+          "Function 'tail' passed {}!",
+          "Count was: %i", a->cell[0]->count);
 
   lval* v = lval_take(a, 0);  
   lval_del(lval_pop(v, 0));
@@ -35,7 +40,8 @@ lval* builtin_join(lenv* e, lval* a) {
 
   for (int i = 0; i < a->count; i++) {
     LASSERT(a, a->cell[i]->type == LVAL_QEXPR,
-      "Function 'join' passed incorrect type.");
+            "Function 'join' passed incorrect type.",
+            "Expected {} but got %i", a->cell[i]->type);
   }
 
   lval* x = lval_pop(a, 0);

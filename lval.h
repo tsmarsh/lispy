@@ -29,8 +29,6 @@ lval* lval_add(lval* v, lval* x);
 
 lval* lval_pop(lval* v, int i);
 
-lval* lval_err(char* m);
-
 lval* lval_sym(char* s);
 
 lval* lval_sexpr(void);
@@ -46,4 +44,6 @@ lval* lval_join(lval* x, lval* y);
 lval* lval_fun(lbuiltin func);
 
 lval* lval_copy(lval* v);
+
+lval* lval_err(char* fmt, ...);
 #endif
