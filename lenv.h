@@ -15,4 +15,8 @@ void lenv_put(lenv* e, lval* k, lval* v);
 void lenv_add_builtin(lenv* e, char* name, lbuiltin func);
 
 void lenv_add_builtins(lenv* e);
+
+lenv* lenv_copy(lenv* e);
+
+void lenv_def(lenv* e, lval* k, lval* v);
 #endif

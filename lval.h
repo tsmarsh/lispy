@@ -46,4 +46,8 @@ lval* lval_fun(lbuiltin func);
 lval* lval_copy(lval* v);
 
 lval* lval_err(char* fmt, ...);
+
+lval* lval_lambda(lval* formals, lval* body);
+
+lval* lval_call(lenv* e, lval* f, lval* a);
 #endif
